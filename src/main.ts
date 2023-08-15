@@ -1,27 +1,17 @@
-import 'react'
+import {BarSorterZone} from './modules.js'
 
-function selectAlgorithm () {
 
-}
+let container = document.getElementById('container')
+if(container){
+    let sorterZone = new BarSorterZone(container as HTMLDivElement,100)
 
-abstract class Algorithm {
+    let random_button = document.getElementById('random_button')
+    if (random_button){
+        random_button.onclick = sorterZone.randomize
+    }
 
-    abstract execute(array:number[]):void
-
-}
-
-class BarSorterZone {
-    constructor(private container:HTMLDivElement, private n_elements:number){
-
-        let sorting_elements = ""
-        for(let i = 0; i < n_elements; i++){
-            sorting_elements+= "<div class='sorting_element' style='--n_elements: "+n_elements+"'></div>"
-        }
-
-        container.innerHTML = `
-        <div class='sorting_element_container'>
-            `+ sorting_elements +`
-        </div>
-        `
+    let sort_button = document.getElementById('random_button')
+    if (sort_button){
+        sort_button.onclick = sorterZone.randomize
     }
 }
