@@ -6,9 +6,9 @@ if (container) {
     if (random_button) {
         random_button.onclick = sorterZone.randomize;
     }
-    let sort_button = document.getElementById('random_button');
+    let sort_button = document.getElementById('sort_button');
     if (sort_button) {
-        sort_button.onclick = sorterZone.randomize;
+        sort_button.onclick = sorterZone.sort;
     }
 }
 //# sourceMappingURL=main.js.map
