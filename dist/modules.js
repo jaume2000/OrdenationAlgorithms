@@ -13,8 +13,12 @@ class BarSorterZone {
         this.elements = new ElementCollection(bar_container, n_elements);
         //this.randomize()
     }
+    setAlgorithm(alg) {
+        this.algorithm = alg;
+    }
     randomize() {
         clearTimeout(this.sortingAnimation);
+        this.elements.removePivot();
         //console.log(this.elements[6].style.getPropertyValue('--element_id'))
         /*for(let i=0; i<this.n_elements; i++){
             let j = Math.floor(Math.random()*(i+1));
@@ -28,6 +32,7 @@ class BarSorterZone {
             algorithm = this.algorithm;
         }
         clearTimeout(this.sortingAnimation);
+        this.elements.removePivot();
         let sortingHistory = algorithm.execute(this.elements.getArray());
         //Animation
         let elements = this.elements;
@@ -36,14 +41,27 @@ class BarSorterZone {
         }
         else {
             for (let i = 0; i < sortingHistory.length; i++) {
-                this.elements.swapElements(sortingHistory[i]);
+                if (sortingHistory[i][0] === 'swap') {
+                    this.elements.swapElements(sortingHistory[i]);
+                }
+                else if (sortingHistory[i][0] === 'set_pivot') {
+                    this.elements.setPivot(sortingHistory[i]);
+                }
             }
         }
     }
     animateTillEnd(sortingHistory, action_id = 0) {
         if (action_id < sortingHistory.length) {
-            this.elements.swapElements(sortingHistory[action_id]);
+            if (sortingHistory[action_id][0] === 'swap') {
+                this.elements.swapElements(sortingHistory[action_id]);
+            }
+            else if (sortingHistory[action_id][0] === 'set_pivot') {
+                this.elements.setPivot(sortingHistory[action_id]);
+            }
             this.sortingAnimation = setTimeout(() => this.animateTillEnd(sortingHistory, action_id + 1), this.animation_timeout);
+        }
+        else {
+            this.elements.removePivot();
         }
     }
 }
@@ -69,12 +87,20 @@ class ElementCollection {
         }
         return parseInt(this.elements[id].style.getPropertyValue('--element_id'));
     }
+    setPivot(p) {
+        this.lastPivot?.classList.remove('pivot');
+        this.lastPivot = this.elements[p[1]];
+        this.lastPivot.classList.add('pivot');
+    }
+    removePivot() {
+        this.lastPivot?.classList.remove('pivot');
+    }
     swapElements(arg1, arg2) {
         let id1 = 0;
         let id2 = 0;
         if (typeof arg2 === typeof undefined) {
-            id1 = arg1[0];
-            id2 = arg1[1];
+            id1 = arg1[1];
+            id2 = arg1[2];
         }
         else {
             id1 = arg1;

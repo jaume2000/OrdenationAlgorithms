@@ -1,5 +1,6 @@
 import { Err } from '@superfaceai/one-sdk'
 import {Algorithm, Randomize} from './algorithms.js'
+import { SwapEnvironmentCNAMEsMessage } from 'aws-sdk/clients/elasticbeanstalk.js'
 
 class BarSorterZone {
 
@@ -18,9 +19,14 @@ class BarSorterZone {
         this.elements = new ElementCollection(bar_container, n_elements)
         //this.randomize()
     }
+
+    setAlgorithm(alg:Algorithm){
+        this.algorithm = alg;
+    }
     
     randomize(){
         clearTimeout(this.sortingAnimation)
+        this.elements.removePivot();
 
         //console.log(this.elements[6].style.getPropertyValue('--element_id'))
         /*for(let i=0; i<this.n_elements; i++){
@@ -39,6 +45,7 @@ class BarSorterZone {
         }
 
         clearTimeout(this.sortingAnimation)
+        this.elements.removePivot();
 
         let sortingHistory = algorithm.execute(this.elements.getArray());
         //Animation
@@ -50,26 +57,41 @@ class BarSorterZone {
         }
         else{
             for(let i = 0; i<sortingHistory.length; i++){
-                this.elements.swapElements(sortingHistory[i])
+                if(sortingHistory[i][0] === 'swap'){
+                    this.elements.swapElements(sortingHistory[i] as Swap)
+                }
+                else if( sortingHistory[i][0] === 'set_pivot'){
+                    this.elements.setPivot(sortingHistory[i] as SetPivot)
+                }
             }
         }
     }
      
     animateTillEnd(sortingHistory:SortHistory,action_id:number = 0){
         if(action_id < sortingHistory.length){
-            this.elements.swapElements(sortingHistory[action_id])
+            if(sortingHistory[action_id][0] === 'swap'){
+                this.elements.swapElements(sortingHistory[action_id] as Swap)
+            }
+            else if( sortingHistory[action_id][0] === 'set_pivot'){
+                this.elements.setPivot(sortingHistory[action_id] as SetPivot)
+            }
 
             this.sortingAnimation = setTimeout(()=>this.animateTillEnd(sortingHistory, action_id+1), this.animation_timeout)
+        }
+        else{
+            this.elements.removePivot();
         }
     }
 }
 
-type SortHistory = [number,number][]
+type Swap = ['swap',number,number]
+type SetPivot = ['set_pivot', number]
+type SortHistory = (Swap|SetPivot)[]
 
 class ElementCollection {
 
-    private elements:HTMLElement[]
-
+    private elements:HTMLElement[] 
+    private lastPivot?:HTMLElement
     public length:number;
 
     constructor(private parent:HTMLDivElement, private n_elements:number){
@@ -96,18 +118,26 @@ class ElementCollection {
     }
 
 
+    setPivot(p:SetPivot){
+        this.lastPivot?.classList.remove('pivot')
+        this.lastPivot = this.elements[p[1]]
+        this.lastPivot.classList.add('pivot')
+    }
+    removePivot(){
+        this.lastPivot?.classList.remove('pivot')
+    }
+
 
     public swapElements(id1:number,id2:number):void;
-    public swapElements(id1:[number,number]):void;
-
+    public swapElements(id1:Swap):void;
     swapElements(arg1:any, arg2?:any):void {
 
         let id1=0;
         let id2=0;
 
         if(typeof arg2 === typeof undefined){
-            id1 = arg1[0]
-            id2 = arg1[1]
+            id1 = arg1[1]
+            id2 = arg1[2]
         }
         else{
             id1 = arg1;

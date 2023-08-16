@@ -8,16 +8,20 @@
     <link rel="stylesheet" href="/dist/style.css">
 </head>
 <body>
-    <div>
-        <h1 id="'h1">Sorting algorithms</h1>
-        <div class='button_container'>
-            <button id="random_button">Randomize</button>
-            <button id="choose_alorithm">Algorithm: QuickSort</button>
-            <button id="sort_button">Sort</button>
+    <div class="background">
+        <div>
+            <h1 id="h1">Sorting algorithms</h1>
+            <div class='button_container'>
+                <button id="random_button">Randomize</button>
+                <select name="Algorithms" id="algorithm_selector">
+                    <option value="quicksort">QuickSort</option>
+                    <option value="mergesort">MergeSort</option>
+                    <option value="bubble">Bubble</option>
+                </select>
+                <button id="sort_button">Sort</button>
+            </div>
         </div>
-    </div>
-    <div id="container">
-
+        <div id="container"></div>
     </div>
 </body>
 </html>
