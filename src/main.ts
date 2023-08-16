@@ -1,11 +1,11 @@
 import {BarSorterZone} from './modules.js'
 
 import './algorithms.js'
-import { SampleAlgorithm } from './algorithms.js'
+import {QuickSort} from './algorithms.js'
 
 let container = document.getElementById('container')
 if(container){
-    let sorterZone = new BarSorterZone(container as HTMLDivElement,400, new SampleAlgorithm(), 1, true)
+    let sorterZone = new BarSorterZone(container as HTMLDivElement, 400, new QuickSort(), 1, true)
 
     let random_button = document.getElementById('random_button')
     if (random_button){

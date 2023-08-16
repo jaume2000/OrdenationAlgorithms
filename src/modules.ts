@@ -1,12 +1,15 @@
 import { Err } from '@superfaceai/one-sdk'
-import {Algorithm} from './algorithms.js'
+import {Algorithm, Randomize} from './algorithms.js'
 
 class BarSorterZone {
 
     private elements:ElementCollection
     private sortingAnimation?: NodeJS.Timeout
+    private randomAlgorithm: Algorithm
 
     constructor(private container:HTMLDivElement, private n_elements:number, private algorithm:Algorithm, private animation_timeout:number=10, private activate_animation:boolean = true){
+
+        this.randomAlgorithm = new Randomize();
 
         let bar_container = document.createElement('div')
         bar_container.classList.add('bar_sorting_element_container')
@@ -20,16 +23,24 @@ class BarSorterZone {
         clearTimeout(this.sortingAnimation)
 
         //console.log(this.elements[6].style.getPropertyValue('--element_id'))
-        for(let i=0; i<this.n_elements; i++){
+        /*for(let i=0; i<this.n_elements; i++){
             let j = Math.floor(Math.random()*(i+1));
             this.elements.swapElements(i,j)
         }
+        */
+       this.sort(this.randomAlgorithm)
+
     }
 
-    sort() {
+    sort(algorithm?:Algorithm) {
+
+        if(algorithm === undefined){
+            algorithm = this.algorithm
+        }
+
         clearTimeout(this.sortingAnimation)
 
-        let sortingHistory = this.algorithm.execute(this.elements);
+        let sortingHistory = algorithm.execute(this.elements.getArray());
         //Animation
         
         let elements = this.elements

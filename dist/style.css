@@ -3,6 +3,10 @@
     --sorting_zone_height: 50vh;
 }
 
+body {
+    margin: 0;
+}
+
 h1 {
     text-align: center;
     color: black;
@@ -13,14 +17,24 @@ h1 {
     box-shadow: 0 0px 15px 0px rgba(0,0,0,0.3);
 }
 
-body {
-    margin: 0;
+.button_container {
+    display: flex;
+    justify-content: space-around;
 }
+
+button {
+    min-width: 400px;
+    min-height: 50px;
+    font-size: 18px;
+    margin-top: 30px;
+}
+
 
 .bar_sorting_element_container{
     position: absolute;
     width: 100%;
     display: flex;
+    justify-content: right;
     height: 50vh;
     margin:0;
     bottom: 0;
@@ -31,9 +45,9 @@ body {
     background-color: hsl(calc((var(--element_id) + 1) / var(--n_elements) *330), 100%, 60%);
     background-image: linear-gradient(to right, hsl(calc((var(--element_id) + 1) / var(--n_elements) *330), 100%, 60%), hsl(calc((var(--element_id) + 1) / var(--n_elements) *330), 80%, 50%));
     width: calc(100% / var(--n_elements));
-    /*
+    
     bottom: calc((var(--element_id) + 1) / var(--n_elements) * var(--sorting_zone_height) - var(--sorting_zone_height));
     height: calc((var(--element_id) + 1) / var(--n_elements) * var(--sorting_zone_height));
-    */
-    height: var(--sorting_zone_height);
+    
+    /*height: var(--sorting_zone_height);*/
 }

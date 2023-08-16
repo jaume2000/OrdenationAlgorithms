@@ -1,3 +1,4 @@
+import { Randomize } from './algorithms.js';
 class BarSorterZone {
     constructor(container, n_elements, algorithm, animation_timeout = 10, activate_animation = true) {
         this.container = container;
@@ -5,6 +6,7 @@ class BarSorterZone {
         this.algorithm = algorithm;
         this.animation_timeout = animation_timeout;
         this.activate_animation = activate_animation;
+        this.randomAlgorithm = new Randomize();
         let bar_container = document.createElement('div');
         bar_container.classList.add('bar_sorting_element_container');
         container.appendChild(bar_container);
@@ -14,14 +16,19 @@ class BarSorterZone {
     randomize() {
         clearTimeout(this.sortingAnimation);
         //console.log(this.elements[6].style.getPropertyValue('--element_id'))
-        for (let i = 0; i < this.n_elements; i++) {
-            let j = Math.floor(Math.random() * (i + 1));
-            this.elements.swapElements(i, j);
+        /*for(let i=0; i<this.n_elements; i++){
+            let j = Math.floor(Math.random()*(i+1));
+            this.elements.swapElements(i,j)
         }
+        */
+        this.sort(this.randomAlgorithm);
     }
-    sort() {
+    sort(algorithm) {
+        if (algorithm === undefined) {
+            algorithm = this.algorithm;
+        }
         clearTimeout(this.sortingAnimation);
-        let sortingHistory = this.algorithm.execute(this.elements);
+        let sortingHistory = algorithm.execute(this.elements.getArray());
         //Animation
         let elements = this.elements;
         if (this.activate_animation) {
