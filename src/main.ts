@@ -1,7 +1,7 @@
 import {BarSorterZone} from './modules.js'
 
 import './algorithms.js'
-import {QuickSort, BubbleSort, MergeSort} from './algorithms.js'
+import {QuickSort, BubbleSort, MergeSort, BidirectionalBubbleSort, InsertionSort, Setter} from './algorithms.js'
 
 let container = document.getElementById('container')
 if(container){
@@ -24,9 +24,11 @@ if(container){
 }
 
 let algorithms = {
+    'bidirectionalbubble': new BidirectionalBubbleSort(),
     'bubble': new BubbleSort(),
     'quicksort': new QuickSort(),
     'mergesort': new MergeSort(),
+    'insertionsort': new InsertionSort()
 }
 
 function selectAlgorithm(alg:string, sorter:BarSorterZone) {

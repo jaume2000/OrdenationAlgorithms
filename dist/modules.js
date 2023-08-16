@@ -7,6 +7,7 @@ class BarSorterZone {
         this.animation_timeout = animation_timeout;
         this.activate_animation = activate_animation;
         this.randomAlgorithm = new Randomize();
+        this.sorting = false;
         let bar_container = document.createElement('div');
         bar_container.classList.add('bar_sorting_element_container');
         container.appendChild(bar_container);
@@ -17,27 +18,54 @@ class BarSorterZone {
         this.algorithm = alg;
     }
     randomize() {
-        clearTimeout(this.sortingAnimation);
-        this.elements.removePivot();
         //console.log(this.elements[6].style.getPropertyValue('--element_id'))
         /*for(let i=0; i<this.n_elements; i++){
             let j = Math.floor(Math.random()*(i+1));
             this.elements.swapElements(i,j)
         }
         */
-        this.sort(this.randomAlgorithm);
+        if (!this.sorting) {
+            this.sort(this.randomAlgorithm, true);
+        }
+        else {
+            this.clearSort();
+        }
     }
-    sort(algorithm) {
+    clearSort() {
+        this.endSort();
+        if (this.algorithm.dangerous) {
+            this.elements.reset();
+        }
+    }
+    endSort() {
+        clearTimeout(this.sortingAnimation);
+        document.getElementById('random_button')?.classList.remove('sorting');
+        document.getElementById('sort_button')?.classList.remove('sorting');
+        this.elements.removePivot();
+        this.sorting = false;
+    }
+    startSort(random_button) {
+        let id = random_button ? 'random_button' : 'sort_button';
+        document.getElementById(id)?.classList.add('sorting');
+        this.sorting = true;
+    }
+    sort(algorithm, random_button = false) {
+        if (this.sorting) {
+            this.clearSort();
+            return;
+        }
+        else {
+            this.startSort(random_button);
+        }
         if (algorithm === undefined) {
             algorithm = this.algorithm;
         }
-        clearTimeout(this.sortingAnimation);
-        this.elements.removePivot();
         let sortingHistory = algorithm.execute(this.elements.getArray());
+        console.log(sortingHistory);
         //Animation
         let elements = this.elements;
         if (this.activate_animation) {
-            this.animateTillEnd(sortingHistory);
+            this.animateTillEnd(sortingHistory, 0, random_button);
         }
         else {
             for (let i = 0; i < sortingHistory.length; i++) {
@@ -47,10 +75,13 @@ class BarSorterZone {
                 else if (sortingHistory[i][0] === 'set_pivot') {
                     this.elements.setPivot(sortingHistory[i]);
                 }
+                else if (sortingHistory[i][0] === 'set_value') {
+                    this.elements.setValue(sortingHistory[i]);
+                }
             }
         }
     }
-    animateTillEnd(sortingHistory, action_id = 0) {
+    animateTillEnd(sortingHistory, action_id = 0, random_button = false) {
         if (action_id < sortingHistory.length) {
             if (sortingHistory[action_id][0] === 'swap') {
                 this.elements.swapElements(sortingHistory[action_id]);
@@ -58,10 +89,13 @@ class BarSorterZone {
             else if (sortingHistory[action_id][0] === 'set_pivot') {
                 this.elements.setPivot(sortingHistory[action_id]);
             }
-            this.sortingAnimation = setTimeout(() => this.animateTillEnd(sortingHistory, action_id + 1), this.animation_timeout);
+            else if (sortingHistory[action_id][0] === 'set_value') {
+                this.elements.setValue(sortingHistory[action_id]);
+            }
+            this.sortingAnimation = setTimeout(() => this.animateTillEnd(sortingHistory, action_id + 1, random_button), this.animation_timeout);
         }
         else {
-            this.elements.removePivot();
+            this.endSort();
         }
     }
 }
@@ -86,6 +120,17 @@ class ElementCollection {
             throw new Error("Index out of bound in the array");
         }
         return parseInt(this.elements[id].style.getPropertyValue('--element_id'));
+    }
+    reset() {
+        for (let i = 0; i < this.n_elements; i++) {
+            this.setValue(['set_value', i, i]);
+        }
+    }
+    setValue(p) {
+        if (p[1] >= this.n_elements || p[2] >= this.n_elements) {
+            throw new Error('Index out of Array bounds');
+        }
+        this.elements[p[1]].style.setProperty('--element_id', p[2].toString());
     }
     setPivot(p) {
         this.lastPivot?.classList.remove('pivot');

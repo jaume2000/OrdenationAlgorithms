@@ -1,6 +1,6 @@
 import { BarSorterZone } from './modules.js';
 import './algorithms.js';
-import { QuickSort, BubbleSort, MergeSort } from './algorithms.js';
+import { QuickSort, BubbleSort, MergeSort, BidirectionalBubbleSort, InsertionSort } from './algorithms.js';
 let container = document.getElementById('container');
 if (container) {
     let sorterZone = new BarSorterZone(container, 400, new QuickSort(), 1, true);
@@ -18,9 +18,11 @@ if (container) {
     }
 }
 let algorithms = {
+    'bidirectionalbubble': new BidirectionalBubbleSort(),
     'bubble': new BubbleSort(),
     'quicksort': new QuickSort(),
     'mergesort': new MergeSort(),
+    'insertionsort': new InsertionSort()
 };
 function selectAlgorithm(alg, sorter) {
     let default_option = 'quicksort';

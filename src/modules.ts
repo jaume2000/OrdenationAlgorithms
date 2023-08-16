@@ -1,17 +1,19 @@
 import { Err } from '@superfaceai/one-sdk'
 import {Algorithm, Randomize} from './algorithms.js'
 import { SwapEnvironmentCNAMEsMessage } from 'aws-sdk/clients/elasticbeanstalk.js'
+import { bool } from 'aws-sdk/clients/signer.js'
 
 class BarSorterZone {
 
     private elements:ElementCollection
     private sortingAnimation?: NodeJS.Timeout
     private randomAlgorithm: Algorithm
+    private sorting:bool
 
     constructor(private container:HTMLDivElement, private n_elements:number, private algorithm:Algorithm, private animation_timeout:number=10, private activate_animation:boolean = true){
 
         this.randomAlgorithm = new Randomize();
-
+        this.sorting = false;
         let bar_container = document.createElement('div')
         bar_container.classList.add('bar_sorting_element_container')
         container.appendChild(bar_container)
@@ -25,8 +27,7 @@ class BarSorterZone {
     }
     
     randomize(){
-        clearTimeout(this.sortingAnimation)
-        this.elements.removePivot();
+        
 
         //console.log(this.elements[6].style.getPropertyValue('--element_id'))
         /*for(let i=0; i<this.n_elements; i++){
@@ -34,26 +35,57 @@ class BarSorterZone {
             this.elements.swapElements(i,j)
         }
         */
-       this.sort(this.randomAlgorithm)
+       if(!this.sorting){
+            this.sort(this.randomAlgorithm, true)
+        }
+        else {
+            this.clearSort();
+        }
 
     }
 
-    sort(algorithm?:Algorithm) {
+    clearSort(){
+        this.endSort();
+        if(this.algorithm.dangerous){
+            this.elements.reset()
+        }
+    }
+
+    endSort(){
+        clearTimeout(this.sortingAnimation);
+        (document.getElementById('random_button') as HTMLButtonElement)?.classList.remove('sorting');
+        (document.getElementById('sort_button') as HTMLButtonElement)?.classList.remove('sorting');
+        this.elements.removePivot();
+        this.sorting = false;
+    }
+
+    startSort(random_button:boolean){
+        let id = random_button ? 'random_button' : 'sort_button';
+        (document.getElementById(id) as HTMLButtonElement)?.classList.add('sorting')
+        this.sorting = true;
+    }
+
+    sort(algorithm?:Algorithm, random_button:boolean = false) {
+
+        if(this.sorting){
+            this.clearSort()
+            return;
+        }
+        else{
+            this.startSort(random_button)
+        }
 
         if(algorithm === undefined){
             algorithm = this.algorithm
         }
 
-        clearTimeout(this.sortingAnimation)
-        this.elements.removePivot();
 
         let sortingHistory = algorithm.execute(this.elements.getArray());
+        console.log(sortingHistory)
         //Animation
-        
         let elements = this.elements
-
         if(this.activate_animation){
-            this.animateTillEnd(sortingHistory);
+            this.animateTillEnd(sortingHistory,0,random_button);
         }
         else{
             for(let i = 0; i<sortingHistory.length; i++){
@@ -63,11 +95,14 @@ class BarSorterZone {
                 else if( sortingHistory[i][0] === 'set_pivot'){
                     this.elements.setPivot(sortingHistory[i] as SetPivot)
                 }
+                else if( sortingHistory[i][0] === 'set_value'){
+                    this.elements.setValue(sortingHistory[i] as SetValue)
+                }
             }
         }
     }
      
-    animateTillEnd(sortingHistory:SortHistory,action_id:number = 0){
+    animateTillEnd(sortingHistory:SortHistory,action_id:number = 0,random_button:boolean = false){
         if(action_id < sortingHistory.length){
             if(sortingHistory[action_id][0] === 'swap'){
                 this.elements.swapElements(sortingHistory[action_id] as Swap)
@@ -75,18 +110,23 @@ class BarSorterZone {
             else if( sortingHistory[action_id][0] === 'set_pivot'){
                 this.elements.setPivot(sortingHistory[action_id] as SetPivot)
             }
+            else if( sortingHistory[action_id][0] === 'set_value'){
+                this.elements.setValue(sortingHistory[action_id] as SetValue)
+            }
 
-            this.sortingAnimation = setTimeout(()=>this.animateTillEnd(sortingHistory, action_id+1), this.animation_timeout)
+            this.sortingAnimation = setTimeout(()=>this.animateTillEnd(sortingHistory, action_id+1, random_button), this.animation_timeout)
         }
         else{
-            this.elements.removePivot();
+            this.endSort()
         }
     }
 }
 
 type Swap = ['swap',number,number]
+type SetValue = ['set_value',number,number] //reference, value
 type SetPivot = ['set_pivot', number]
-type SortHistory = (Swap|SetPivot)[]
+
+type SortHistory = (Swap|SetPivot|SetValue)[]
 
 class ElementCollection {
 
@@ -117,12 +157,23 @@ class ElementCollection {
 
     }
 
+    reset(){
+        for(let i = 0; i < this.n_elements; i++){
+            this.setValue(['set_value',i,i])
+        }
+    }
+
+    setValue(p:SetValue){
+        if(p[1] >= this.n_elements || p[2] >= this.n_elements){ throw new Error('Index out of Array bounds')}
+        this.elements[p[1]].style.setProperty('--element_id', p[2].toString());
+    }
 
     setPivot(p:SetPivot){
         this.lastPivot?.classList.remove('pivot')
         this.lastPivot = this.elements[p[1]]
         this.lastPivot.classList.add('pivot')
     }
+
     removePivot(){
         this.lastPivot?.classList.remove('pivot')
     }
